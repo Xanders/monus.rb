@@ -18,8 +18,6 @@ module Monus
     return true if @@prepared or @@preparing
     @@preparing = true
 
-    prepare_logger if options[:logger]
-
     @@engine = Monus::Engine[options[:engine] || :pure]
     @@engine.prepare
 
