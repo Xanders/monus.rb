@@ -35,9 +35,13 @@ module Monus::Backend::InfluxDB
     @global_tags = Monus.options.dig(:influxdb_options, :global_tags)&.map { |key, value| ",#{key}=#{value}" }&.join
   end
 
-  def write(field, value)
-    value = "\"#{value.gsub '"', '\"'}\"" if value.kind_of? String
-    message = "#{@measurement}#{@global_tags} #{field}=#{value}"
+  def write(fields, tags = nil)
+    fields = fields.map { |key, value| "#{key}=#{value.inspect}" }.join(',')
+
+    tags = tags&.map { |key, value| ",#{key}=#{value}" }&.join
+
+    message = "#{@measurement}#{@global_tags}#{tags} #{fields}"
+
     case @mode
     when :udp
       Monus.engine.send_udp_datagram message, @host, @udp_port

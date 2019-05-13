@@ -49,8 +49,12 @@ module Monus
     end
   end
 
-  def self.set(field, value)
-    backend.write field, value
+  def self.write(fields, context = nil)
+    backend.write(fields, context)
+  end
+
+  def self.set(field, value, context = nil)
+    write({field => value}, context)
   end
 
   def self.accept(field)
