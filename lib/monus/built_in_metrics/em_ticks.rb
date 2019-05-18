@@ -4,12 +4,12 @@ module Monus::BuiltInMetric::EmTicks
 
     counter, time = 0, Time.now
 
-    EM.tick_loop do
+    @tick_loop = EM.tick_loop do
       counter += 1
       delta = Time.now - time
       if delta > @interval
         ticks = (counter.to_f / delta).round
-        Monus.set :em_ticks, ticks
+        Fiber.new { Monus.set :em_ticks, ticks }.resume
         counter = 0
         time = Time.now
       end

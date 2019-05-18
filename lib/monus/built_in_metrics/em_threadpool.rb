@@ -9,6 +9,7 @@ module Monus::BuiltInMetric::EmThreadpool
 
       if threadpool
         by_status = threadpool.group_by(&:status).transform_values(&:size)
+        by_status.default = 0
 
         total = threadpool.size
         run = by_status['run']
