@@ -2,24 +2,30 @@ module Monus::BuiltInMetric::EmThreadpool
   def activate
     @interval = Monus.options.dig(:em_threadpool_metric_options, :interval) || 1
 
-    threadpool = nil
+    threadpool, threadqueue = nil, nil
 
     Monus.engine.every @interval do
       threadpool ||= EM.send(:instance_variable_get, :@threadpool)
+      threadqueue ||= EM.send(:instance_variable_get, :@threadqueue)
 
-      if threadpool
-        by_status = threadpool.group_by(&:status).transform_values(&:size)
-        by_status.default = 0
-
+      if threadpool and threadqueue
         total = threadpool.size
-        run = by_status['run']
-        load_percent = run.to_f / total
-        broken = total - run - by_status['sleep']
+        alive = threadpool.count(&:alive?)
+        broken = total - alive
+
+        free = threadqueue.num_waiting
+        busy = alive - free
+        load_percent = busy.to_f / alive
+
+        threadqueue_length = threadqueue.length
 
         Monus.write em_threadpool_load: load_percent,
-                    em_threadpool_run: run,
+                    em_threadpool_free: free,
+                    em_threadpool_busy: busy,
                     em_threadpool_total: total,
-                    em_threadpool_broken: broken
+                    em_threadpool_alive: alive,
+                    em_threadpool_broken: broken,
+                    em_threadqueue_length: threadqueue_length
       end
     end
   end
