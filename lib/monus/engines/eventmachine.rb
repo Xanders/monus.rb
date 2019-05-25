@@ -1,5 +1,8 @@
+require 'resolv'
+
 module Monus::Engine::EventMachine
   def prepare
+    @dns_cache = {}
     @prepared = true
   end
 
@@ -31,8 +34,29 @@ module Monus::Engine::EventMachine
   def send_udp_datagram(message, host, port)
     EM.schedule do
       @udp_socket ||= EM.open_datagram_socket '127.0.0.1', 0
-      @udp_socket.send_datagram message, host, port
+
+      ip = @dns_cache[host]
+
+      if ip.nil? and (host =~ Resolv::IPv4::Regex or host =~ Resolv::IPv6::Regex)
+        ip = host
+        @dns_cache[host] = ip
+      end
+
+      if ip
+        @udp_socket.send_datagram message, ip, port
+      else
+        EM::DNS::Resolver.resolve(host).callback do |ip_list|
+          ip = ip_list.first
+          @dns_cache[host] = ip
+          send_udp_datagram(message, host, port)
+        end
+      end
     end
+  end
+
+  def invalidate_dns_cache!
+    keys = @dns_cache.keys.reject { |key| key =~ Resolv::IPv4::Regex || key =~ Resolv::IPv6::Regex }
+    keys.each { |key| @dns_cache.delete(key) }
   end
 
   def every(interval, fire_immediately: true, on_error: nil, &block)
