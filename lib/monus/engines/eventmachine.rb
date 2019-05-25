@@ -33,7 +33,7 @@ module Monus::Engine::EventMachine
 
   def send_udp_datagram(message, host, port)
     EM.schedule do
-      @udp_socket ||= EM.open_datagram_socket '127.0.0.1', 0
+      @udp_socket ||= EM.open_datagram_socket '0.0.0.0', 0
 
       ip = @dns_cache[host]
 
