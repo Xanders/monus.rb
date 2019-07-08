@@ -64,6 +64,11 @@ module Monus
   def self.refuse(field)
     set field, false
   end
+
+  # TODO: inner cache and per-second sending
+  def self.add(field, count = 1)
+    set field, count
+  end
 end
 
 require_relative 'monus/engine'
