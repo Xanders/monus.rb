@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'monus'
-  s.version     = '0.1.9'
+  s.version     = '0.1.10'
   s.summary     = 'God of Monitoring'
   s.description = 'Monus is an in-process monitoring library for several backends and engines'
   s.authors     = ['Xanders']

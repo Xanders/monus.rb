@@ -66,8 +66,8 @@ module Monus
   end
 
   # TODO: inner cache and per-second sending
-  def self.add(field, count = 1)
-    set field, count
+  def self.add(field, count: 1, context: nil)
+    set field, count, context
   end
 end
 
